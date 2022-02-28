@@ -4,16 +4,18 @@
     import { interpret } from 'xstate';
 
     let current;
-    const subreddits = ['reactjs', 'javascript', 'svelte'];
+    let subreddit, posts;
+    $: computed = current;
+    const subreddits = ['','reactjs', 'javascript', 'svelte'];
     const redditService = interpret(redditMachine)
         .onTransition(state => {
-            console.log(state);
             current = state
+            subreddit = current.context.subreddit;
+            posts = current.context.posts;
         }).start();
-    const { subreddit, posts } = current.context;
+
     const { send } = redditService;  
     function handleChange(e){
-        //console.log(e.target.value);
         send('SELECT', { name: e.target.value });
     }
 </script>
@@ -22,7 +24,13 @@
     <header>
         <select on:change={handleChange}>
             {#each subreddits as subreddit}
-                <option value={subreddit}>{subreddit}</option>
+                <option 
+                    value={subreddit} 
+                    disabled={!subreddit} 
+                    selected={subreddit == ''}
+                >
+                {subreddit ? subreddit : 'select'}
+                </option>
             {/each}
         </select>
     </header>
