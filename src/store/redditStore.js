@@ -1,54 +1,43 @@
-import { createMachine, assign } from 'xstate';
-
-function invokeFetchSubreddit(context) {
-    const { subreddit } = context;
-  
-    return fetch(`https://www.reddit.com/r/${subreddit}.json`)
-      .then((response) => response.json())
-      .then((json) => json.data.children.map((child) => child.data));
-}
+import { createMachine, assign, spawn } from 'xstate';
+import { createSubredditMachine } from './subredditStore';
 
 export const redditMachine = createMachine({
-  id: 'reddit',
-  initial: 'idle',
-  context: {
-    subreddit: null,
-    posts: [],
-  },
-  states: {
-    idle: {},
-    selected: {
-        initial: 'loading',
-        states: {
-            loading: {
-                invoke: {
-                    id: 'fetch-subreddit',
-                    src: invokeFetchSubreddit,
-                    onDone: {
-                        target: 'loaded',
-                        actions: assign({
-                            posts: (context, event) => {
-                                return  event.data
-                            }
-                        })
-                    },
-                    onError: 'failed'
-                }
-            },
-            loaded: {},
-            failed: {}
-        }
-    }
-  },
-  on: {
+    id: 'reddit',
+    initial: 'idle',
+    context: {
+      subreddits: [],
+      subreddit: null
+    },
+    states: {
+      idle: {},
+      selected: {} // no invocations!
+    },
+    on: {
       SELECT: {
-          target: '.selected',
-          actions: assign({
-            subreddit: (context, event) => {
-                console.log(context);
-                return event.name;
-            }
-          })
+        target: '.selected',
+        actions: assign((context, event) => {
+        // Use the existing subreddit actor if one already exists
+          let subreddit = context.subreddits[event.name];
+
+          if (subreddit) {
+            return {
+              ...context,
+              subreddit
+            };
+          }
+
+          // Otherwise, spawn a new subreddit actor and
+          // save it in the subreddits object
+          subreddit = spawn(createSubredditMachine(event.name));
+
+          return {
+            subreddits: {
+              ...context.subreddits,
+              [event.name]: subreddit
+            },
+            subreddit
+          };          
+        }),
       }
-  }
-});
+    }
+  });

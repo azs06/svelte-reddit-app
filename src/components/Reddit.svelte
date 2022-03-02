@@ -1,20 +1,21 @@
 <script>
-    import { useMachine } from '@xstate/svelte';
     import { redditMachine } from '../store/redditStore'
     import { interpret } from 'xstate';
+    import Subreddit from './Subreddit.svelte';
 
+    const subreddits = ['', 'reactjs', 'javascript', 'svelte'];
+    
     let current;
-    let subreddit, posts;
-    $: computed = current;
-    const subreddits = ['','reactjs', 'javascript', 'svelte'];
+    $: subreddit = ''; 
+    
     const redditService = interpret(redditMachine)
         .onTransition(state => {
             current = state
-            subreddit = current.context.subreddit;
-            posts = current.context.posts;
+            subreddit = current.context.subreddit
         }).start();
 
-    const { send } = redditService;  
+    const { send } = redditService; 
+
     function handleChange(e){
         send('SELECT', { name: e.target.value });
     }
@@ -34,15 +35,9 @@
             {/each}
         </select>
     </header>
-    <section>
-        <h1>{current.matches('idle') ? 'Select a subreddit': subreddit}</h1>
-        {@html current.matches({ selected: 'loading' }) ? '<div>Loading..</div>' : ''}
-        {#if current.matches({ selected: 'loaded' })}
-            <ul>
-                {#each posts as post}
-                    <li>{post.title}</li>
-                {/each}
-            </ul>
+    <div>
+        {#if subreddit}
+            <Subreddit service={subreddit} />
         {/if}
-    </section>
+    </div>
 </main>
