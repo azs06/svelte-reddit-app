@@ -1,16 +1,26 @@
 import App from './App.svelte'
 
-function initApplication(target){
+let app = null;
+function initApplication(target, config={}){
   const app = new App({
     target,
+    props: {
+      ...config
+    }
   })
   return app
 }
 
-const el = document.createElement('div')
-el.setAttribute('id', 'sv-app');
-//el.setAttribute('style', 'display: none;');
-document.body.appendChild(el)
-const app = initApplication(el);
+function initSkipper(config={}){
+  const el = document.createElement('div')
+  el.setAttribute('id', 'sv-app');
+  //el.setAttribute('style', 'display: none;');
+  document.body.appendChild(el)
+  app = initApplication(el, config);
+}
+
+initSkipper();
+
+window.initSkipper = initSkipper;
 
 export default app
