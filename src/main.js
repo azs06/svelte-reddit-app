@@ -9,6 +9,7 @@ function initApplication(target){
 
 const el = document.createElement('div')
 el.setAttribute('id', 'sv-app');
+//el.setAttribute('style', 'display: none;');
 document.body.appendChild(el)
 const app = initApplication(el);
 
