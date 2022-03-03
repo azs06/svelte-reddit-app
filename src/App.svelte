@@ -1,10 +1,30 @@
 <script>
+  import { createEventDispatcher, onMount, onDestroy } from 'svelte';
   import Reddit from './components/Reddit.svelte'
+
+  const dispatch = createEventDispatcher();
+  export let el;
+
+  onMount(() => {
+    setTimeout(() => {
+      dispatch('mounted', {
+       element: el, 
+      });
+    })
+  })
+
+  onDestroy(() => {
+    setTimeout(() => {
+      dispatch('destroyed');
+    })
+  })
+  
 </script>
 
-<main>
+<main bind:this={el}>
   <Reddit />
 </main>
+
 
 <style>
   :root {

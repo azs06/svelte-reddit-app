@@ -4,16 +4,15 @@
     import Subreddit from './Subreddit.svelte';
 
     const subreddits = ['', 'reactjs', 'javascript', 'svelte'];
-    
-    let current;
-    $: subreddit = ''; 
-    
-    const redditService = interpret(redditMachine)
-        .onTransition(state => {
-            current = state
-            subreddit = current.context.subreddit
-        }).start();
 
+    export let el;
+    
+    
+    const redditService = interpret(redditMachine).start();
+
+    $: current = $redditService ? $redditService.context: {};
+    $: subreddit = current.subreddit;
+    
     const { send } = redditService; 
 
     function handleChange(e){
@@ -21,7 +20,7 @@
     }
 </script>
 
-<main>
+<div bind:this={el}>
     <header>
         <select on:change={handleChange}>
             {#each subreddits as subreddit}
@@ -40,4 +39,4 @@
             <Subreddit service={subreddit} />
         {/if}
     </div>
-</main>
+</div>
